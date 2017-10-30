@@ -4,7 +4,6 @@
 REPO_CO=/home/zsolt/svn/svnadmin/
 REPO="${1}"
 
-SVN=/usr/bin/svnlite
 SVNLOOK=/usr/bin/svnlitelook
 
 CHANGED=`${SVNLOOK} changed ${REPO} | awk '/^[^D]/ {print $2}'`
@@ -42,8 +41,6 @@ func_scp() {
 func_rm() {
   ssh "${1%:*}" rm "${1#*:}/${2}"
 }
-
-${SVN} update ${REPO_CO}
 
 for_all func_scp ${CHANGED}
 for_all func_rm ${DELETED}
