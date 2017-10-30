@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Checkouted repository
+REPO_CO=/home/zsolt/svn/svnadmin/
+REPO="${1}"
+
+SVN=/usr/bin/svnlite
+SVNLOOK=/usr/bin/svnlitelook
+
+CHANGED=`${SVNLOOK} changed ${REPO} | awk '/^[^D]/ {print $2}'`
+DELETED=`${SVNLOOK} changed ${REPO} | awk '/^D/ {print $2}'`
+
+# $1: changed file
+get_desturl() {
+  export DESTURL=""
+  case "$1" in
+    dokumentumok/*|svnadmin/*)
+      export DESTURL="localhost:/home/storage/svn/"
+      ;;
+  esac
+}
+
+# $1: function to run
+# $*: the values
+for_all() {
+  FUNC=$1
+  shift
+  for i in $*; do
+    get_desturl "${i}"
+    for durl in ${DESTURL}; do
+      ${FUNC} "${durl}" "${i}"
+    done
+  done
+}
+
+# $1: desturl, "server:directory" format
+# $2: file with path relative to svn repository's root
+func_scp() {
+  scp "${REPO_CO}/${2}" "${1}/${2}"
+}
+
+func_rm() {
+  ssh "${1%:*}" rm "${1#*:}/${2}"
+}
+
+${SVN} update ${REPO_CO}
+
+for_all func_scp ${CHANGED}
+for_all func_rm ${DELETED}
+
