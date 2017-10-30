@@ -1,0 +1,13 @@
+[default]
+
+[post-commit]
+LC_ALL=hu_HU.UTF-8
+PATH=/bin/:/usr/bin/:/usr/local/bin
+TEXINPUTS=.:/home/zsolt/texmf//:/usr/local/share/texmf-dist//:
+DOCDIR=/home/zsolt/docs
+STATICDIR=/home/zsolt/svn/uzsolt.hu/static/
+
+SVN=/usr/bin/svnlite
+SVNLOOK=/usr/bin/svnlitelook
+SSH=/usr/bin/ssh
+LATEXMK=/usr/local/bin/latexmk

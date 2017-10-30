@@ -1,17 +1,6 @@
 #!/bin/sh
 
-export LC_ALL=hu_HU.UTF-8
-export PATH=/bin/:/usr/bin/:/usr/local/bin
-export TEXINPUTS=.:/home/zsolt/texmf//:/usr/local/share/texmf-dist//:
-
-SVN=/usr/bin/svnlite
-SVNLOOK=/usr/bin/svnlitelook
-SSH=/usr/bin/ssh
-LATEXMK=/usr/local/bin/latexmk
-
 REPOS="${1}"
-DOCDIR=/home/zsolt/docs
-STATICDIR=/home/zsolt/svn/uzsolt.hu/static/
 TOHOMEPAGE=${DOCDIR}/to_homepage.psv
 
 TMPDIR=`mktemp -d -t uzsolt.hu`
