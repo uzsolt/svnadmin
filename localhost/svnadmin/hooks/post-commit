@@ -9,15 +9,14 @@ SVNLOOK=/usr/bin/svnlitelook
 CHANGED=`${SVNLOOK} changed ${REPO} | awk '/^[^D]/ {print $2}'`
 DELETED=`${SVNLOOK} changed ${REPO} | awk '/^D/ {print $2}'`
 
-# $1: changed file
-get_desturl() {
-  export DESTURL=""
+# $1: server name
+get_svn_root() {
   case "$1" in
-    dokumentumok/*|svnadmin/*)
-      export DESTURL="localhost:/home/storage/svn/"
+    localhost)
+      echo "/home/storage/svn/"
       ;;
-    maintainport/*|wpwmm4/*|wpwmm4-bookmarks/*|uzsolt.hu/*|homefiles/*)
-      export DESTURL="svn.uzsolt.hu:/usr/local/subversion/"
+    svn.uzsolt.hu)
+      echo "/usr/local/subversion/"
       ;;
   esac
 }
@@ -28,10 +27,9 @@ for_all() {
   FUNC=$1
   shift
   for i in $*; do
-    get_desturl "${i}"
-    for durl in ${DESTURL}; do
-      ${FUNC} "${durl}" "${i}"
-    done
+    DESTURL=`echo ${i} | sed "s@/.*@@"`
+    FILE=`echo ${i} | sed "s@^[^/]*/@@"`
+    ${FUNC} "${DESTURL}:`get_svn_root ${DESTURL}`" "${FILE}"
   done
 }
 
