@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /home/zsolt/git-mirror/wpwmm4-uzsolt.hu
+git svn rebase
+git push origin master
