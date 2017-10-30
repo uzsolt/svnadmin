@@ -16,6 +16,9 @@ get_desturl() {
     dokumentumok/*|svnadmin/*)
       export DESTURL="localhost:/home/storage/svn/"
       ;;
+    maintainport/*|wpwmm4/*|wpwmm4-bookmarks/*|uzsolt.hu/*|homefiles/*)
+      export DESTURL="svn.uzsolt.hu:/usr/local/subversion/"
+      ;;
   esac
 }
 
