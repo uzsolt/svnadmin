@@ -3,6 +3,7 @@
 export LC_ALL=hu_HU.UTF-8
 export PATH=/bin/:/usr/bin/:/usr/local/bin
 export TEXINPUTS=.:/home/zsolt/texmf//:/usr/local/share/texmf-dist//:
+
 SVN=/usr/bin/svnlite
 SVNLOOK=/usr/bin/svnlitelook
 SSH=/usr/bin/ssh
