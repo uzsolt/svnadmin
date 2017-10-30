@@ -28,14 +28,19 @@ for_all() {
   shift
   for i in $*; do
     DESTURL=`echo ${i} | sed "s@/.*@@"`
-    ${FUNC} "${DESTURL}:`get_svn_root ${DESTURL}`" "${i}"
+    FILE=${i} #`echo ${i} | sed "s@^[^/]*/@@"`
+    SERVERDIR="${DESTURL}:`get_svn_root ${DESTURL}`"
+    echo SRC:  ${FILE}
+    echo DEST: ${DESTURL}
+    echo SRVD: ${SERVERDIR}
+    ${FUNC} "${SERVERDIR}" "${FILE}"
   done
 }
 
 # $1: desturl, "server:directory" format
 # $2: file with path relative to svn repository's root
 func_scp() {
-  scp "${REPO_CO}/${2}" "${1}/${2}"
+  echo scp "${REPO_CO}/${2}" "${1}/${2#*/}"
 }
 
 func_rm() {
