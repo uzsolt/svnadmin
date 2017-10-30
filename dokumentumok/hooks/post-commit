@@ -8,6 +8,7 @@ SVN=/usr/bin/svnlite
 SVNLOOK=/usr/bin/svnlitelook
 SSH=/usr/bin/ssh
 LATEXMK=/usr/local/bin/latexmk
+
 REPOS="${1}"
 DOCDIR=/home/zsolt/docs
 STATICDIR=/home/zsolt/svn/uzsolt.hu/static/
