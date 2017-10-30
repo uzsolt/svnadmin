@@ -28,8 +28,7 @@ for_all() {
   shift
   for i in $*; do
     DESTURL=`echo ${i} | sed "s@/.*@@"`
-    FILE=`echo ${i} | sed "s@^[^/]*/@@"`
-    ${FUNC} "${DESTURL}:`get_svn_root ${DESTURL}`" "${FILE}"
+    ${FUNC} "${DESTURL}:`get_svn_root ${DESTURL}`" "${i}"
   done
 }
 
