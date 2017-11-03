@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for vps in uzsolt.hu {backup,freebsd,svn}.uzsolt.hu; do
+  ssh vps svn update /home/zsolt/svn/server-dotfiles/
+  doas /usr/bin/make -C /home/zsolt/svn/server-dotfiles/
+done
+
