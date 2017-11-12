@@ -1,35 +1,97 @@
 #!/bin/sh
 
+set -e
+trap "clean" INT TERM EXIT
+
 REPOS="${1}"
-TOHOMEPAGE=${DOCDIR}/to_homepage.psv
 
-TMPDIR=`mktemp -d -t uzsolt.hu`
-
-for f in `${SVNLOOK} changed "${REPOS}" | awk '{print $2}'`; do
-  # remove trunk/ from filename
-  f=${f#*/}
-  if grep -q "${f}|" "${TOHOMEPAGE}"; then
-
-    cd ${TMPDIR}
-    cp ${DOCDIR}/${f} ${TMPDIR}
-    REV=`${SVNLOOK} youngest "${REPOS}"`
-    DATE=`date +'%Y.%m.%d. %H:%M'`
-    filename=${f##*/}
-    TARGETFILE=${STATICDIR}`grep "${f}|" "${TOHOMEPAGE}" | awk -F "|" '{print $2}'`
-
-    if [ -e "${TARGETFILE}" ]; then
-
-      /home/zsolt/bin/tex-convert-homepage "${filename}" \
-        "${DATE}" "${REV}"
-      ${LATEXMK} -silent -cd -pdf ${TMPDIR}/${filename}
-      ${SVNLOOK} info "${REPOS}" | sed "1,3 d" > ${TMPDIR}/commit-msg
-      printf "docs/r%s\n" "${REV}" >> ${TMPDIR}/commit-msg
-      cp ${filename%.*}.pdf ${TARGETFILE}
-      ${SVN} commit ${TARGETFILE} -F ${TMPDIR}/commit-msg
-      ${SSH} uzsolt.hu ${SVN} up /home/zsolt/svn/uzsolt.hu
-
-    fi
-
+for prg in svn svnlook svnmucc; do
+  if which -s ${prg}; then
+    eval ${prg}=${prg}
+  else
+    eval ${prg}=/usr/bin/svnlite${prg#svn}
   fi
 done
-rm -rf ${TMPDIR}
+
+FILES_TO_CLEAN=""
+
+clean() {
+  [ -n "${FILES_TO_CLEAN}" ] && rm -r ${FILES_TO_CLEAN}
+}
+
+add_svn_ignore() {
+
+  SEXT=tex
+  DEXT=pdf
+  TMPFILE=`mktemp -t svndocs`
+  FILELIST=`mktemp -t svndocs`
+  PROPS=`mktemp -t svndocs`
+  NEWFILES=`mktemp -t svndocs`
+  FILES_TO_CLEAN="${FILES_TO_CLEAN} ${TMPFILE} ${FILELIST} ${PROPS} ${NEWFILES}"
+
+  LASTREV=`${svnlook} youngest ${REPOS}`
+  ! ${svnlook} changed ${REPOS} | sed -n "/\.${SEXT}$/ s,^. *,,p" | sort -u > ${TMPFILE}
+
+  for dir in `sed "s,\(.*\)/.*\.${SEXT}$,\1,p" ${TMPFILE} | sort -u`; do
+
+    sed -n "\@^${dir}@ s,${dir}/\(.*\)\.${SEXT},\1.${DEXT},p" ${TMPFILE} > ${FILELIST}
+    ! ${svn} propget svn:ignore file://${REPOS}/${dir} | grep -v '^$' | sort -u > ${PROPS}
+    comm -23 ${FILELIST} ${PROPS} > ${NEWFILES}
+
+    if [ `stat -f %z ${NEWFILES}` -gt 1 ]; then
+      cat ${NEWFILES} ${PROPS} | sort -u > ${FILELIST}
+      ${svnmucc} -U file://${REPOS} -m "kihagyás: r${LASTREV}" propsetf svn:ignore ${FILELIST} ${dir}
+    fi
+
+  done
+
+}
+
+uzsolt_hu_commit() {
+
+  LATEXMK=/usr/local/bin/latexmk
+
+  DOCDIR=/home/zsolt/docs
+  TOHOMEPAGE=${DOCDIR}/to_homepage.psv
+  STATICDIR=/home/zsolt/svn/uzsolt.hu/static
+  HOST="uzsolt.hu"
+
+  TMPDIR=`mktemp -d -t uzsolt.hu`
+  FILES_TO_CLEAN="${FILES_TO_CLEAN} ${TMPDIR}"
+
+  ! ${svnlook} info "${REPOS}" | sed "1,3 d" > ${TMPDIR}/commit-msg
+  DATE=`date +'%Y.%m.%d. %H:%M'`
+  REV=`${svnlook} youngest "${REPOS}"`
+  printf "docs/r%s\n" "${REV}" >> ${TMPDIR}/commit-msg
+
+  TARGETFILES=""
+  for f in `! { 
+      ${svnlook} changed /home/storage/svn/dokumentumok/ | sed 's,^. * trunk/,,' ;
+      awk -F '|' '{print $1}' ${TOHOMEPAGE} ;
+    } | sort | uniq -d`; do
+
+    TARGETFILE=${STATICDIR}/`grep "${f}|" "${TOHOMEPAGE}" | awk -F "|" '{print $2}'`
+    TARGETFILES="${TARGETFILES} ${TARGETFILE}"
+    TEXINPUTS=".:/home/zsolt/texmf/"
+
+
+    TMPFILE=`mktemp ${DOCDIR}/${f}-XXXX`
+    FILES_TO_CLEAN="${FILES_TO_CLEAN} ${TMPFILE}"
+
+    cp ${DOCDIR}/${f} ${TMPFILE}
+    JOBNAME="svn-updating-$$"
+    /home/zsolt/bin/tex-convert-homepage \
+      "${TMPFILE}" "${DATE}" "${REV}"
+    ${LATEXMK} -silent -cd --jobname="${JOBNAME}" -pdf "${TMPFILE}"
+    cp ${DOCDIR}/${f%/*}/${JOBNAME}.pdf ${TARGETFILE}
+    ${LATEXMK} -silent -cd --jobname="${JOBNAME}" -C "${TMPFILE}"
+
+  done
+
+  ${svn} commit ${TARGETFILES} -F ${TMPDIR}/commit-msg
+  ssh ${HOST} svn up /home/zsolt/svn/uzsolt.hu
+
+}
+
+add_svn_ignore
+uzsolt_hu_commit
