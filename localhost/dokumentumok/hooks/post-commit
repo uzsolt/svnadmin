@@ -88,8 +88,10 @@ uzsolt_hu_commit() {
 
   done
 
-  ${svn} commit ${TARGETFILES} -F ${TMPDIR}/commit-msg
-  ssh ${HOST} svn up /home/zsolt/svn/uzsolt.hu
+  if [ -n "${TARGETFILES}" ]; then
+    ${svn} commit ${TARGETFILES} -F ${TMPDIR}/commit-msg
+    ssh ${HOST} svn up /home/zsolt/svn/uzsolt.hu
+  fi
 
 }
 
