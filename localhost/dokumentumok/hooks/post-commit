@@ -53,6 +53,7 @@ uzsolt_hu_commit() {
 
   DOCDIR=/home/zsolt/docs
   TOHOMEPAGE=${DOCDIR}/to_homepage.psv
+  export TEXMFHOME=/home/zsolt/texmf/
   STATICDIR=/home/zsolt/svn/uzsolt.hu/static
   HOST="uzsolt.hu"
 
@@ -73,7 +74,6 @@ uzsolt_hu_commit() {
     TARGETFILE=${STATICDIR}/`grep "${f}|" "${TOHOMEPAGE}" | awk -F "|" '{print $2}'`
     TARGETFILES="${TARGETFILES} ${TARGETFILE}"
     TEXINPUTS=".:/home/zsolt/texmf/"
-
 
     TMPFILE=`mktemp ${DOCDIR}/${f}-XXXX`
     FILES_TO_CLEAN="${FILES_TO_CLEAN} ${TMPFILE}"
