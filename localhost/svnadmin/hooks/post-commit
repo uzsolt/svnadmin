@@ -15,7 +15,7 @@ get_svn_root() {
     localhost)
       echo "/home/storage/svn/"
       ;;
-    svn.uzsolt.hu)
+    svn@svn.uzsolt.hu)
       echo "/usr/local/subversion/"
       ;;
   esac
