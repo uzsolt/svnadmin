@@ -1,7 +1,1 @@
-#!/bin/sh
-
-for repo in `svn ls file:///usr/local/subversion/homefiles`; do
-  cd /home/zsolt/git-mirror/${repo}
-  git svn rebase
-  git push origin master
-done
+../../maintainport/hooks/post-commit
